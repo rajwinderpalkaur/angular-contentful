@@ -1,0 +1,44 @@
+/* Button utility classes */
+
+/* Base button styles */
+.btn {
+  @apply rounded font-semibold focus:outline-none transition-colors;
+}
+
+/* Button sizes */
+.btn-sm {
+  @apply px-2 py-1 text-xs;
+}
+
+.btn-md {
+  @apply px-4 py-2 text-base;
+}
+
+.btn-lg {
+  @apply px-6 py-3 text-lg;
+}
+
+/* Button variants */
+.btn-primary {
+  @apply bg-blue-500 hover:bg-blue-700 text-white;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-800;
+}
+
+.btn-success {
+  @apply bg-green-500 hover:bg-green-700 text-white;
+}
+
+.btn-danger {
+  @apply bg-red-500 hover:bg-red-700 text-white;
+}
+
+.btn-warning {
+  @apply bg-yellow-500 hover:bg-yellow-700 text-black;
+}
+
+.btn-info {
+  @apply bg-blue-300 hover:bg-blue-400 text-blue-800;
+}
