@@ -1,0 +1,24 @@
+<ng-container *ngIf="!isLoading; else loading">
+  <ng-container *ngIf="!notFound; else pageNotFound">
+    <app-dynamic-content
+      [contentType]="contentType"
+      [data]="pageData"
+    ></app-dynamic-content>
+  </ng-container>
+
+  <ng-template #pageNotFound>
+    <div class="not-found">
+      <h1>Page Not Found</h1>
+      <p>
+        The page "{{ pageData?.['slug'] }}" does not exist or could not be
+        found.
+      </p>
+    </div>
+  </ng-template>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading">
+    <p>Loading content...</p>
+  </div>
+</ng-template>

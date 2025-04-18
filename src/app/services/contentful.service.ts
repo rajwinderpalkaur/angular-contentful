@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { createClient, Entry, EntryCollection } from 'contentful';
+import {
+  createClient,
+  Entry,
+  EntryCollection,
+  EntrySkeletonType,
+} from 'contentful';
 import { ContentfulResponse, HomePage } from '../models/contentful.models';
 import { environment } from '../../environments/environment';
 
@@ -38,7 +43,6 @@ export class ContentfulService {
       }
       return contentfulResponse.items[0].fields;
     } catch (error) {
-      console.error(`Error fetching ${contentType} data:`, error);
       return null;
     }
   }
@@ -63,7 +67,6 @@ export class ContentfulService {
       const contentfulResponse = response as unknown as ContentfulResponse<T>;
       return contentfulResponse.items.map((item) => item.fields);
     } catch (error) {
-      console.error(`Error fetching ${contentType} entries:`, error);
       return [];
     }
   }
@@ -81,7 +84,6 @@ export class ContentfulService {
       });
       return entry.fields as T;
     } catch (error) {
-      console.error(`Error fetching entry with ID ${entryId}:`, error);
       return null;
     }
   }

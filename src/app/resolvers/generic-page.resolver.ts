@@ -1,23 +1,33 @@
 import { inject } from '@angular/core';
-import { ResolveFn } from '@angular/router';
+import { ResolveFn, Router } from '@angular/router';
 import { ContentfulService } from '../services/contentful.service';
 
 /**
  * A generic resolver for fetching any Contentful content type by slug
  * @param contentType The Contentful content type to fetch
+ * @param defaultSlug Optional default slug to use if no slug is in the route
  * @returns A resolver function for the specified content type
  */
 export function createGenericResolver<T>(
-  contentType: string
+  contentType: string,
+  defaultSlug?: string
 ): ResolveFn<Promise<T | null>> {
   return async (route) => {
-    const slug = route.paramMap.get('slug') || 'default';
+    const slug = route.paramMap.get('slug') || defaultSlug || 'default';
     const contentfulService = inject(ContentfulService);
+    const router = inject(Router);
 
     try {
-      return await contentfulService.getEntryBySlug<T>(contentType, slug);
+      const data = await contentfulService.getEntryBySlug<T>(contentType, slug);
+
+      if (!data) {
+        router.navigate(['/not-found']);
+        return null;
+      }
+
+      return data;
     } catch (error) {
-      console.error(`Error fetching ${contentType} data`, error);
+      router.navigate(['/not-found']);
       return null;
     }
   };
@@ -35,14 +45,22 @@ export function createListResolver<T>(
 ): ResolveFn<Promise<T[]>> {
   return async () => {
     const contentfulService = inject(ContentfulService);
+    const router = inject(Router);
 
     try {
-      return await contentfulService.getEntriesByContentType<T>(
+      const data = await contentfulService.getEntriesByContentType<T>(
         contentType,
         limit
       );
+
+      if (!data || data.length === 0) {
+        router.navigate(['/not-found']);
+        return [];
+      }
+
+      return data;
     } catch (error) {
-      console.error(`Error fetching ${contentType} list data`, error);
+      router.navigate(['/not-found']);
       return [];
     }
   };

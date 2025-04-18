@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
 import { homePageResolver } from './resolvers/home-page.resolver';
-import { createGenericResolver } from './resolvers/generic-page.resolver';
-import { HomePage } from './models/contentful.models';
+import { dynamicPageResolver } from './resolvers/dynamic-page.resolver';
 
 export const routes: Routes = [
+  // Root path - uses home page resolver
   {
     path: '',
     resolve: {
@@ -14,14 +14,28 @@ export const routes: Routes = [
         (m) => m.HomePageComponent
       ),
   },
+  // Not found route
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./pages/not-found/not-found.component').then(
+        (m) => m.NotFoundComponent
+      ),
+  },
+  // Dynamic route for all other paths
   {
     path: ':slug',
     resolve: {
-      homePageData: createGenericResolver<HomePage>('homePage'),
+      dynamicPageData: dynamicPageResolver,
     },
     loadComponent: () =>
-      import('./pages/home-page/home-page.component').then(
-        (m) => m.HomePageComponent
+      import('./pages/dynamic-page/dynamic-page.component').then(
+        (m) => m.DynamicPageComponent
       ),
+  },
+  // Wildcard route - must be last
+  {
+    path: '**',
+    redirectTo: 'not-found',
   },
 ];

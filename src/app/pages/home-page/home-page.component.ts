@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HeroComponent } from '../../components/hero/hero.component';
@@ -17,16 +17,28 @@ import { MetaService } from '../../services/meta.service';
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.css',
 })
-export class HomePageComponent {
+export class HomePageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private metaService = inject(MetaService);
+
+  @Input() data: HomePage | null = null;
 
   homePage: HomePage | null = null;
   heroContent: HeroEntry | undefined;
   authorContent: AuthorEntry | undefined;
 
-  constructor() {
-    this.homePage = this.route.snapshot.data['homePageData'];
+  ngOnInit() {
+    this.setupPageData();
+  }
+
+  private setupPageData() {
+    // If data is passed as an input, use it
+    // Otherwise, get it from the resolver
+    if (this.data) {
+      this.homePage = this.data;
+    } else {
+      this.homePage = this.route.snapshot.data['homePageData'];
+    }
 
     if (this.homePage) {
       // Set hero content
@@ -39,6 +51,9 @@ export class HomePageComponent {
       if (this.homePage.metaData?.fields) {
         const metaData = this.homePage.metaData.fields;
         this.metaService.setMetaData(metaData.title, metaData.description);
+      } else {
+        // Set default meta data if none available
+        this.metaService.setMetaData('Home Page', 'Welcome to our website');
       }
     }
   }

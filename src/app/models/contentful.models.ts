@@ -13,6 +13,15 @@ export interface MetaDataEntry {
   description: string;
 }
 
+export interface BlogPage {
+  slug: string;
+  blogTitle: string;
+  blogDescription: string;
+  metaData?: {
+    fields: MetaDataEntry;
+  };
+}
+
 export interface HomePage {
   slug: string;
   section1?: {
