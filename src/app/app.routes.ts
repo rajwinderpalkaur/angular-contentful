@@ -24,15 +24,4 @@ export const routes: Routes = [
         (m) => m.HomePageComponent
       ),
   },
-  // Example route for a potential future blog page:
-  // {
-  //   path: 'blog/:slug',
-  //   resolve: {
-  //     blogPageData: createGenericResolver<BlogPage>('blogPage'),
-  //   },
-  //   loadComponent: () =>
-  //     import('./pages/blog-page/blog-page.component').then(
-  //       (m) => m.BlogPageComponent
-  //     ),
-  // },
 ];
