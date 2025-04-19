@@ -7,6 +7,7 @@ import {
 } from 'contentful';
 import { ContentfulResponse, HomePage } from '../models/contentful.models';
 import { environment } from '../../environments/environment';
+import { ContentModel, ContentResponse } from '../models/content.model';
 
 // Valid include depths for Contentful (0-10)
 type IncludeDepth = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

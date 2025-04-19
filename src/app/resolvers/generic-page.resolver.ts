@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { ResolveFn, Router } from '@angular/router';
+import { ResolveFn } from '@angular/router';
 import { ContentfulService } from '../services/contentful.service';
 
 /**
@@ -15,19 +15,11 @@ export function createGenericResolver<T>(
   return async (route) => {
     const slug = route.paramMap.get('slug') || defaultSlug || 'default';
     const contentfulService = inject(ContentfulService);
-    const router = inject(Router);
 
     try {
       const data = await contentfulService.getEntryBySlug<T>(contentType, slug);
-
-      if (!data) {
-        router.navigate(['/not-found']);
-        return null;
-      }
-
-      return data;
+      return data; // Return data even if null
     } catch (error) {
-      router.navigate(['/not-found']);
       return null;
     }
   };
@@ -45,7 +37,6 @@ export function createListResolver<T>(
 ): ResolveFn<Promise<T[]>> {
   return async () => {
     const contentfulService = inject(ContentfulService);
-    const router = inject(Router);
 
     try {
       const data = await contentfulService.getEntriesByContentType<T>(
@@ -53,14 +44,8 @@ export function createListResolver<T>(
         limit
       );
 
-      if (!data || data.length === 0) {
-        router.navigate(['/not-found']);
-        return [];
-      }
-
-      return data;
+      return data || []; // Return data or empty array
     } catch (error) {
-      router.navigate(['/not-found']);
       return [];
     }
   };

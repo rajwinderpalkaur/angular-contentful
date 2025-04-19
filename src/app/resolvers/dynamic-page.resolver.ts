@@ -1,43 +1,45 @@
 import { inject } from '@angular/core';
-import { ResolveFn, Router } from '@angular/router';
+import { ResolveFn } from '@angular/router';
 import { ContentfulService } from '../services/contentful.service';
-import { CONTENT_TYPE_REGISTRY } from '../shared/content-type-registry';
+import { SlugMappingService } from '../services/slug-mapping.service';
 import { ContentModel, ContentResponse } from '../models/content.model';
 
 /**
  * Generic resolver that loads content based on the slug
- * Tries to find content with the provided slug across all registered content types
+ * Uses a simple mapping approach
  */
 export const dynamicPageResolver: ResolveFn<
   Promise<ContentResponse | null>
-> = async (route) => {
-  const slug = route.paramMap.get('slug') || '';
-  const contentfulService = inject(ContentfulService);
-  const router = inject(Router);
+> = async (route, state) => {
+  try {
+    // Get slug from route or use 'home' for the root path
+    const slug = route.paramMap.get('slug') || 'home';
+    const contentfulService = inject(ContentfulService);
+    const slugMapping = inject(SlugMappingService);
 
-  // Special case for not-found route
-  if (slug === 'not-found') {
-    return null;
-  }
+    // Get the content type from our mapping service
+    const contentType = slugMapping.getContentType(slug);
 
-  // Try to find content with this slug across all registered content types
-  for (const registryEntry of CONTENT_TYPE_REGISTRY) {
-    const contentType = registryEntry.contentType;
-
-    try {
-      const data = await contentfulService.getEntryBySlug<ContentModel>(
-        contentType,
-        slug
-      );
-
-      if (data) {
-        return { contentType, data };
-      }
-    } catch (error) {
-      // Continue to next content type
+    // If we don't have a mapping for this slug, return null (not found)
+    if (!contentType) {
+      return null;
     }
-  }
 
-  // Return null for unknown slugs
-  return null;
+    // Fetch content using the content type and slug
+    const data = await contentfulService.getEntryBySlug<ContentModel>(
+      contentType,
+      slug
+    );
+
+    // If content exists, return it with the content type
+    if (data) {
+      return { contentType, data };
+    }
+
+    // Content not found
+    return null;
+  } catch (error) {
+    console.error('Error in dynamic page resolver:', error);
+    return null; // Return null on any error
+  }
 };

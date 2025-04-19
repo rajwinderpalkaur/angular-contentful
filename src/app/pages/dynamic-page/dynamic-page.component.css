@@ -5,12 +5,24 @@
   min-height: 300px;
 }
 
+.missing-content {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
 .not-found {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   padding: 3rem;
   text-align: center;
-  min-height: 300px;
+}
+
+.not-found h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #e74c3c;
 }

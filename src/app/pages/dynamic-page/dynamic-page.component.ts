@@ -1,51 +1,92 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewContainerRef,
+  Injector,
+  ComponentRef,
+  ChangeDetectionStrategy,
+  inject,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DynamicContentComponent } from '../../shared/dynamic-content/dynamic-content.component';
+import { ActivatedRoute } from '@angular/router';
 import { ContentModel, ContentResponse } from '../../models/content.model';
+import {
+  ComponentLoaderService,
+  ContentComponent,
+} from '../../services/component-loader.service';
 
 @Component({
   selector: 'app-dynamic-page',
   standalone: true,
-  imports: [CommonModule, DynamicContentComponent],
+  imports: [CommonModule],
   templateUrl: './dynamic-page.component.html',
   styleUrl: './dynamic-page.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DynamicPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  private viewContainerRef = inject(ViewContainerRef);
+  private injector = inject(Injector);
+  private componentLoader = inject(ComponentLoaderService);
+  private cdr = inject(ChangeDetectorRef);
 
-  contentType: string = '';
-  pageData: ContentModel | null = null;
   isLoading: boolean = true;
+  hasContent: boolean = false;
   notFound: boolean = false;
+  currentSlug: string = '';
+
+  private componentRef: ComponentRef<ContentComponent> | null = null;
 
   ngOnInit() {
     this.loadPageData();
+    // Get the current slug from the URL
+    this.currentSlug = this.route.snapshot.paramMap.get('slug') || '';
   }
 
-  private loadPageData() {
+  private async loadPageData() {
     const resolvedData = this.route.snapshot.data[
       'dynamicPageData'
     ] as ContentResponse | null;
 
-    if (resolvedData?.contentType && resolvedData?.data) {
-      this.contentType = resolvedData.contentType;
-      this.pageData = resolvedData.data;
-      this.isLoading = false;
-      this.notFound = this.contentType === 'unknown';
-    } else {
-      // Just set notFound to true and stop loading, without redirecting
-      this.isLoading = false;
-      this.notFound = true;
+    this.isLoading = false;
 
-      // Extract the slug from URL for display purposes
-      const urlSegments = this.route.snapshot.url;
-      if (urlSegments.length > 0) {
-        this.pageData = {
-          slug: urlSegments[urlSegments.length - 1].path,
-        } as ContentModel;
-      }
+    if (resolvedData?.contentType && resolvedData?.data) {
+      await this.renderComponent(resolvedData.contentType, resolvedData.data);
+      this.cdr.markForCheck();
+    } else {
+      // No content found, show not found state
+      this.notFound = true;
+      this.cdr.markForCheck();
     }
+  }
+
+  private async renderComponent(contentType: string, data: ContentModel) {
+    // Clear previous component
+    this.viewContainerRef.clear();
+    if (this.componentRef) {
+      this.componentRef.destroy();
+      this.componentRef = null;
+    }
+
+    this.hasContent = false;
+
+    // Get the component type for this content type
+    const componentType = await this.componentLoader.getComponentForContentType(
+      contentType
+    );
+
+    if (!componentType || !data) {
+      this.notFound = true;
+      return; // No component for this content type or no data
+    }
+
+    // Create and initialize the component
+    this.componentRef = this.viewContainerRef.createComponent<ContentComponent>(
+      componentType,
+      { injector: this.injector }
+    );
+    this.componentRef.instance.data = data;
+    this.hasContent = true;
   }
 }

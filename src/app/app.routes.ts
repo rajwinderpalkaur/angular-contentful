@@ -1,28 +1,19 @@
 import { Routes } from '@angular/router';
-import { homePageResolver } from './resolvers/home-page.resolver';
 import { dynamicPageResolver } from './resolvers/dynamic-page.resolver';
 
 export const routes: Routes = [
-  // Root path - uses home page resolver
+  // Root path (home) - also uses the dynamic page resolver
   {
     path: '',
     resolve: {
-      homePageData: homePageResolver,
+      dynamicPageData: dynamicPageResolver,
     },
     loadComponent: () =>
-      import('./pages/home-page/home-page.component').then(
-        (m) => m.HomePageComponent
+      import('./pages/dynamic-page/dynamic-page.component').then(
+        (m) => m.DynamicPageComponent
       ),
   },
-  // Not found route
-  {
-    path: 'not-found',
-    loadComponent: () =>
-      import('./pages/not-found/not-found.component').then(
-        (m) => m.NotFoundComponent
-      ),
-  },
-  // Dynamic route for all other paths
+  // Dynamic route for all specific paths
   {
     path: ':slug',
     resolve: {
@@ -36,6 +27,12 @@ export const routes: Routes = [
   // Wildcard route - must be last
   {
     path: '**',
-    redirectTo: 'not-found',
+    resolve: {
+      dynamicPageData: dynamicPageResolver,
+    },
+    loadComponent: () =>
+      import('./pages/dynamic-page/dynamic-page.component').then(
+        (m) => m.DynamicPageComponent
+      ),
   },
 ];
